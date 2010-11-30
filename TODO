@@ -1,0 +1,14 @@
+# TODO
+
+- There are many more things to extract and to be expressed in rules, like the
+  mana cost.
+
+- Add custom rules to a separate Prolog file. For example, we might want
+  predicates like:
+
+    cmc(Card, Cost)
+    red(Card)  % etc
+    has_type(Card, Type)
+    has_subtype(Card, Subtype)
+    has_rarity(Card, Rarity)
+

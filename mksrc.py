@@ -24,6 +24,40 @@ def get_files_for_sets(sets, dir, suffix):
     files = [os.path.join(dir, fn) for fn in files]
     return files
 
+# extract power, toughness
+def write_pt_rule(cardnode, cardname, f, attr):
+    p = cardnode.find(attr)
+    if p is not None:
+        power = p.text
+        if '*' in power:
+            print "skipping", attr, "for now:", cardname, power
+            return
+        print >> f, "%s(%s, %s)." % (attr, cardname, topi(p.text))
+
+def prolog_list_as_str(lst):
+    s = string.join(lst, ", ")
+    return "[%s]" % s
+
+def write_types(cardnode, cardname, f):
+    t = cardnode.find('type_oracle').text # must be present
+    before, sep, after = t.partition("--")
+    for s, name in [(before, "types"), (after, "subtypes")]:
+        parts = s.strip().split()
+        parts = [topi(p) for p in parts]
+        typestr = prolog_list_as_str(parts)
+        print >> f, "%s(%s, %s)." % (name, cardname, typestr)
+
+def write_rarity(cardnode, cardname, f):
+    r = cardnode.find('rarity').text
+    rarities = {
+        'R': 'rare',
+        'U': 'uncommon',
+        'C': 'common',
+        'MR': 'mythic_rare',
+        'L': 'basic_land'
+    }
+    print >> f, "rarity(%s, %s)." % (cardname, rarities.get(r, 'unknown'))
+
 def gen_prolog_src(filename):
     print "Loading:", filename
     xml = ET.parse(filename)
@@ -46,8 +80,14 @@ def gen_prolog_src(filename):
 
     # extract card data
     for cardnode in cards:
+        print >> f
         pl_card_name = name_to_prolog_identifier(cardnode.find('name').text)
         print >> f, 'card(%s, %s).' % (pl_shortname, pl_card_name)
+
+        write_pt_rule(cardnode, pl_card_name, f, 'power')
+        write_pt_rule(cardnode, pl_card_name, f, 'toughness')
+        write_types(cardnode, pl_card_name, f)
+        write_rarity(cardnode, pl_card_name, f)
 
     f.close()
     print "Written:", out_filename
@@ -59,6 +99,8 @@ def name_to_prolog_identifier(s):
     s = s.replace(" ", "_")
     chars = [c for c in s if c in VALID_IDENTIFIER_CHARS]
     return string.join(chars, '')
+
+topi = name_to_prolog_identifier # shorthand
 
 if __name__ == "__main__":
 

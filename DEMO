@@ -1,0 +1,54 @@
+# DEMO
+
+# Grab the latest XML from http://projects.flowsnake.org/mtgxml.html
+# Unpack it somewhere, then edit config.txt so that 'xmldir' points to it
+
+# generate cards_m11.pl
+$ python mksrc.py
+
+# run swipl with it (ignore the warnings for now)
+$ swipl -s cards_m11.pl
+
+?- power(X, 6).
+X = ancient_hellkite ;
+X = frost_titan ;
+X = grave_titan ;
+X = inferno_titan ;
+X = primeval_titan ;
+X = sun_titan ;
+X = yavimaya_wurm.
+
+?- power(X, Y), Y > 6.
+X = demon_of_deaths_gate,
+Y = 9 ;
+X = duskdale_wurm,
+Y = 7 ;
+X = gaeas_revenge,
+Y = 8 ;
+X = stormtide_leviathan,
+Y = 8 ;
+X = vengeful_archon,
+Y = 7 ;
+false.
+
+?- rarity(Card, mythic_rare), types(Card, Types), member(creature, Types).
+Card = baneslayer_angel,
+Types = [creature] ;
+Card = demon_of_deaths_gate,
+Types = [creature] ;
+Card = frost_titan,
+Types = [creature] ;
+Card = gaeas_revenge,
+Types = [creature] ;
+Card = grave_titan,
+Types = [creature] ;
+Card = inferno_titan,
+Types = [creature] ;
+Card = platinum_angel,
+Types = [artifact, creature] ;
+Card = primeval_titan,
+Types = [creature] ;
+Card = sun_titan,
+Types = [creature] ;
+false.
+
