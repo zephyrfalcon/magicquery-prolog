@@ -3,6 +3,7 @@
 
 import ConfigParser
 import os
+import re
 import string
 try:
     import xml.etree.cElementTree as ET
@@ -58,6 +59,35 @@ def write_rarity(cardnode, cardname, f):
     }
     print >> f, "rarity(%s, %s)." % (cardname, rarities.get(r, 'unknown'))
 
+mana = {
+    'B': 'black',
+    'G': 'green',
+    'R': 'red',
+    'S': 'snow',
+    'U': 'blue',
+    'W': 'white',
+    'X': 'x',
+}
+
+re_number = re.compile(r"^\d+$")
+
+def write_manacost(cardnode, cardname, f):
+    cost = []
+    costnode = cardnode.find('manacost')
+    if costnode is not None:
+        for symnode in costnode.findall('symbol'):
+            m = symnode.text
+            if re_number.match(m):
+                cost.append(m)
+            elif len(m) == 1:
+                manasym = mana[m]
+                cost.append(manasym)
+            elif len(m) == 2:
+                raise NotImplementedError("hybrid mana")
+
+    s = prolog_list_as_str(cost)
+    print >> f, "cost(%s, %s)." % (cardname, s)
+
 def gen_prolog_src(filename):
     print "Loading:", filename
     xml = ET.parse(filename)
@@ -88,6 +118,7 @@ def gen_prolog_src(filename):
         write_pt_rule(cardnode, pl_card_name, f, 'toughness')
         write_types(cardnode, pl_card_name, f)
         write_rarity(cardnode, pl_card_name, f)
+        write_manacost(cardnode, pl_card_name, f)
 
     f.close()
     print "Written:", out_filename
